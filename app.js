@@ -142,7 +142,7 @@ app.get('/nearest', function (req, res, next) {
  */
 setInterval(function () {
 
-	run(moment('02-10-2023', 'MM-DD-YYYY').utc());
+	run(moment().utc());
 
 }, 900000);
 
@@ -177,10 +177,10 @@ function getGribData(targetMoment) {
 	function runQuery(targetMoment) {
 
 		// only go 2 weeks deep
-		if (moment.utc().diff(targetMoment, 'days') > 30) {
-			console.log('hit limit, harvest complete or there is a big gap in data..');
-			return;
-		}
+		// if (moment.utc().diff(targetMoment, 'days') > 30) {
+		// 	console.log('hit limit, harvest complete or there is a big gap in data..');
+		// 	return;
+		// }
 
 		var stamp = moment(targetMoment).format('YYYYMMDD') + roundHours(moment(targetMoment).hour(), 6);
 		var urlstamp = stamp.slice(0, 8) + '/' + stamp.slice(8, 10) + '/atmos';
