@@ -7,6 +7,10 @@ const fsp = require('fs').promises;
 var Q = require('q');
 var cors = require('cors');
 var AWS = require('aws-sdk');
+const { exit } = require("process");
+const axios = require('axios').default
+require('dotenv').config()
+const FormData = require('form-data');
 
 AWS.config.update({ region: 'us-west-2' });
 
@@ -247,9 +251,11 @@ async function convertGribToJson(stamp, targetMoment) {
 
 	var exec = require('child_process').exec, child;
 	const currentPath = __dirname
-	child = exec(`${currentPath}/grib2json/target/grib2json-0.8.0-SNAPSHOT/bin/grib2json --data --output json-data/` + stamp + '.json --names --compact grib-data/' + stamp + '.f000',
+	const fileName = stamp + '.json'
+	const pathSaveJsonFile = `json-data/${fileName}`
+	child = exec(`${currentPath}/grib2json/target/grib2json-0.8.0-SNAPSHOT/bin/grib2json --data --output json-data/` + fileName + ' --names --compact grib-data/' + stamp + '.f000',
 		{ maxBuffer: 500 * 1024 },
-		function (error, stdout, stderr) {
+		async (error, stdout, stderr) => {
 
 			if (error) {
 				console.log('exec error: ' + error);
@@ -259,6 +265,27 @@ async function convertGribToJson(stamp, targetMoment) {
 				console.log("converted..");
 				// pushGribToS3(stamp);
 				console.log("pushed to s3")
+				console.log(process.env.URL_GENERATE_LINK_UPLOAD_FILE);
+				const fileNeedUpload = fs.readFileSync(pathSaveJsonFile);
+				const response = await axios.post(process.env.URL_GENERATE_LINK_UPLOAD_FILE, { fileName })
+				console.log("response", response);
+				const { data: presignedUrl, statusCode } = response.data
+				const successStatusCode = 201
+				if (statusCode === successStatusCode) {
+					const requestConfig = {
+						method: 'put',
+						url: presignedUrl,
+						headers: {
+							"Content-Type": "multipart/form-data"
+						},
+						data: fileNeedUpload
+					}
+					const uploadResponse = await axios(requestConfig)
+					const { status } = uploadResponse
+					if (status === 200) {
+						await axios.post(process.env.URL_SAVE_FILE_TO_DB, { fileName })
+					}
+				}
 
 				// don't keep raw grib data
 				exec('rm grib-data/*');

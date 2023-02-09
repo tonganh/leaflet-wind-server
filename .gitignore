@@ -4,3 +4,4 @@ grib-data
 json-data
 .DS_Store
 grib2json
+.env
