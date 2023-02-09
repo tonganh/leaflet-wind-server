@@ -1,6 +1,4 @@
-FROM openjdk:19-slim-buster
-
-RUN apt update && apt-get -y install nodejs npm
+FROM node:14-alpine
 
 WORKDIR /usr/src/app
 
@@ -10,6 +8,8 @@ RUN npm install
 
 COPY . .
 
+RUN chmod +x /usr/src/app/grib2json/target/grib2json-0.8.0-SNAPSHOT/bin/grib2json
+
 EXPOSE 7000
 
-CMD [ "node", "server.js" ]
+CMD [ "yarn", "start" ]

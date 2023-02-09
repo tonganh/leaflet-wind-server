@@ -3,3 +3,4 @@ node_modules
 grib-data
 json-data
 .DS_Store
+grib2json

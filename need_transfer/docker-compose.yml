@@ -1,0 +1,10 @@
+version: "3.3"
+services:
+  web:
+    image: "wind-server-local"
+    build:
+      context: .
+    ports:
+      - 7000:7000
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
